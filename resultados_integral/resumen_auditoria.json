@@ -3,12 +3,17 @@
   "viajes_sin_poligono": 34553,
   "zonas_en_cartografia": 803,
   "zonas_comparables": 793,
-  "zonas_criticas": 27,
-  "zonas_criticas_sin_puntos_internos": 6,
+  "zonas_criticas": 26,
+  "zonas_criticas_sin_puntos_internos": 3,
   "p75_viajes_zona": 2406.0,
-  "p75_pct_brecha_zona": 13.746630727762803,
-  "puntos_bip": 1905,
-  "puntos_sin_poligono": 29,
+  "p75_pct_brecha_zona": 13.368687668196925,
+  "puntos_recarga_intermodal_aeropuerto": 1,
+  "estaciones_metro_con_recarga": 126,
+  "filas_metro_originales": 143,
+  "puntos_metro_originales_unicos": 134,
+  "filas_metro_desfase_gt_500m": 12,
+  "puntos_bip": 1900,
+  "puntos_sin_poligono": 28,
   "asignaciones_bip_con_solape": 0,
   "asignaciones_paradas_con_solape": 0,
   "asignaciones_gtfs_con_solape": 0,
@@ -18,25 +23,26 @@
   "paraderos_bus_dtpm": 11932,
   "pct_subidas_dtpm_con_ubicacion": 99.94018717838567,
   "pct_subidas_por_codigo_interno_diccionario": 58.03159690122932,
-  "paraderos_criticos": 426,
-  "paraderos_aislados_500m": 2108,
+  "paraderos_criticos": 422,
+  "paraderos_aislados_500m": 2089,
   "k": 2,
-  "silueta": 0.46877949132753627,
-  "pca_varianza_2d": 0.7473936815927269,
+  "silueta": 0.4739651332023541,
+  "pca_varianza_2d": 0.7543061766089311,
   "perfil_mayor_brecha": 1,
   "perfiles_alta_demanda_y_brecha": [],
   "n_candidatos": 20,
-  "n_elegibles": 274,
+  "n_elegibles": 266,
+  "presupuesto_comparable": 20,
   "cobertura_500m_final": {
-    "Índice del avance": 35876.799999999996,
-    "Cobertura marginal": 54091.0
+    "Índice del avance": 23747.6,
+    "Cobertura marginal": 42784.0
   },
   "metricas_espaciales": [
     {
       "Modelo": "Ridge con recarga",
-      "MAE": 175.64098441366374,
-      "RMSE": 408.21064477127254,
-      "R2": 0.16075305604333057,
+      "MAE": 175.77223720872394,
+      "RMSE": 406.6854732582325,
+      "R2": 0.16701259074521868,
       "n_train": 9197,
       "n_test": 2732
     },
@@ -50,9 +56,9 @@
     },
     {
       "Modelo": "Random Forest",
-      "MAE": 189.17060479312565,
-      "RMSE": 470.43110969985753,
-      "R2": -0.11458497806915746,
+      "MAE": 180.55012031862373,
+      "RMSE": 444.0495443648842,
+      "R2": 0.006920595669469454,
       "n_train": 9197,
       "n_test": 2732
     },
@@ -89,11 +95,11 @@
     }
   ],
   "psm_descriptivo": {
-    "n_tratados_soporte": 6948,
-    "n_controles_soporte": 4917,
-    "controles_distintos_emparejados": 2950,
-    "diferencia_media_ajustada_descriptiva": 161.51951640759933,
-    "max_smd_post": 0.03892154538086665
+    "n_tratados_soporte": 6990,
+    "n_controles_soporte": 4874,
+    "controles_distintos_emparejados": 2945,
+    "diferencia_media_ajustada_descriptiva": 173.72163090128754,
+    "max_smd_post": 0.035333785261730866
   },
   "fuentes": [
     "datos_originales/Lugares de carga",
@@ -102,5 +108,5 @@
     "datos_originales/Zona777_ADATRAP/Zonas777-04-04-2014/Shape/Zonas777_V07_04_2014.shp",
     "datos_originales/GTFS_20260418.zip"
   ],
-  "mapa": "Live_Demo_BIP.html"
+  "mapa": "resultados_integral/Live_Demo_BIP.html"
 }

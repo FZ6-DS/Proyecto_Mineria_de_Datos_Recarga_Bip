@@ -11,3 +11,13 @@ __pycache__/
 *.out
 *.toc
 *.synctex.gz
+/Video Minería de Datos.mov
+
+/resultados_integral/*
+!/resultados_integral/diagnostico_zona777.csv
+!/resultados_integral/ranking_candidatos_bip.csv
+!/resultados_integral/comparacion_cobertura_500m.csv
+!/resultados_integral/auditoria_recarga_metro.csv
+!/resultados_integral/metricas_sensibilidad_espacial.csv
+!/resultados_integral/sensibilidad_radios.csv
+!/resultados_integral/resumen_auditoria.json
