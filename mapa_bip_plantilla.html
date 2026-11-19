@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Desiertos de recarga bip! · Santiago</title>
+<style>
+:root{color-scheme:light;--ink:#172e34;--muted:#4f656a;--bg:#f1f5f2;--line:#d7e3de;--red:#a92c23;--blue:#26737d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,sans-serif}
+header{background:#132f33;color:#fff;padding:24px clamp(16px,4vw,64px) 22px;display:flex;gap:18px;align-items:end;justify-content:space-between;flex-wrap:wrap}h1{font-size:clamp(27px,4vw,43px);line-height:1.07;margin:0 0 7px;letter-spacing:-.045em}header p{margin:0;color:#bcdbd7}header strong{font-size:14px;background:#29494a;padding:8px 11px;border-radius:6px}
+main{display:grid;grid-template-columns:minmax(0,1fr) minmax(265px,345px);gap:17px;padding:17px clamp(12px,3vw,42px)}.panel,.map{background:white;border:1px solid var(--line);border-radius:12px}.map{position:relative;min-height:610px;overflow:hidden;background:#edf2ee}.map canvas{width:100%;height:100%;position:absolute;inset:0;touch-action:none;cursor:grab}.map canvas:active{cursor:grabbing}
+.tools,.zoom,.scale{position:absolute;z-index:1}.tools{top:12px;left:12px;right:12px;display:flex;flex-wrap:wrap;gap:6px;pointer-events:none}.tools label{pointer-events:auto;font-size:13px;background:#fff;padding:5px 8px;border:1px solid var(--line);border-radius:5px;display:flex;align-items:center;gap:5px}.zoom{bottom:13px;right:13px;display:flex;gap:4px}.zoom button{height:36px;min-width:34px}.scale{bottom:15px;left:16px;font-size:12px;border-bottom:2px solid #28464a;font-weight:700}.north{position:absolute;top:61px;right:18px;text-align:center;line-height:1;font-size:14px;font-weight:700;pointer-events:none}
+button,select,input{font:inherit}button,select{color:var(--ink);border:1px solid #a5b9b2;background:#fff;border-radius:6px}button{cursor:pointer;padding:5px 9px}button:hover,button[aria-current="true"]{background:#e4efea}button:focus-visible,select:focus-visible,canvas:focus-visible,input:focus-visible{outline:3px solid #26737d;outline-offset:2px}input[type=checkbox]{accent-color:var(--blue)}
+aside{display:flex;flex-direction:column;gap:12px;min-width:0}.panel{padding:13px 15px}.panel h2{font-size:17px;margin:0 0 6px}.panel p{margin:4px 0;color:var(--muted);font-size:13px}.panel select{width:100%;margin:4px 0 7px;padding:6px 8px}.legend{display:grid;gap:5px;margin-top:5px;font-size:13px}.swatch{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:8px;vertical-align:-1px}.dot{border-radius:50%}
+.ranking{display:grid;gap:4px;max-height:144px;overflow:auto;padding:2px}.ranking button{text-align:left;font-size:13px;display:grid;grid-template-columns:5ch 1fr;gap:6px}.ranking span{color:var(--muted)}.detail{min-height:120px}.detail dl{margin:4px 0 0;display:grid;grid-template-columns:1fr auto;gap:4px 9px;font-size:13px}.detail dd{margin:0;text-align:right;font-weight:650}.mark{color:var(--red);font-weight:700}.outcome{font-size:18px;font-weight:750}.note{font-size:12px;color:var(--muted);margin:0;padding:0 clamp(12px,3vw,42px) 16px}
+@media(max-width:800px){main{grid-template-columns:1fr}.map{min-height:480px}aside{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}}
+@media(max-width:430px){.map{min-height:410px}.tools label{font-size:11px;padding:4px}.north{top:83px}}
+</style>
+</head>
+<body>
+<header><div><h1>Desiertos de recarga bip!</h1><p>Santiago · Acceso a recarga por Zona 777</p></div><strong id="cifra"></strong></header>
+<main>
+  <section class="map" aria-label="Mapa de Santiago">
+    <canvas id="mapa" tabindex="0" aria-label="Mapa de zonas y candidatos. Use las flechas para desplazar, + y − para ampliar o reducir."></canvas>
+    <div class="tools"><label><input id="zonas" type="checkbox" checked> Zonas 777</label><label><input id="bip" type="checkbox"> Puntos bip!</label><label><input id="sitios" type="checkbox" checked> Sitios de la estrategia</label><label><input id="radio" type="checkbox"> Radio del sitio activo</label></div>
+    <div class="north" aria-label="Norte">N<br>▲</div><div class="scale" id="escala"></div>
+    <div class="zoom"><button id="menos" aria-label="Reducir">−</button><button id="mas" aria-label="Ampliar">+</button><button id="inicio">Vista completa</button></div>
+  </section>
+  <aside>
+    <section class="panel"><h2>Cuadrantes de prioridad</h2><label for="filtro">Resaltar zonas</label><select id="filtro"><option value="">Todas</option><option>Prioridad crítica</option><option>Prioridad de accesibilidad</option><option>Alta demanda con recarga próxima</option><option>Menor prioridad</option><option>Sin datos comparables</option></select><div class="legend" id="leyenda"></div></section>
+    <section class="panel detail" aria-live="polite"><h2 id="detalle-titulo">Detalle del mapa</h2><div id="detalle"><p>Seleccione una zona o un sitio para ver sus indicadores.</p></div></section>
+    <section class="panel"><h2>Sitios para evaluar</h2><label for="metodo">Estrategia a 500 m</label><select id="metodo"><option>Índice del avance</option><option>Cobertura marginal</option></select><p><strong class="outcome" id="cubiertas"></strong> subidas/día al alcance de los sitios simulados.</p><div class="ranking" id="ranking" aria-label="Listado de sitios"></div></section>
+  </aside>
+</main>
+<p class="note">Demanda de abril de 2026 · Catastro bip! de septiembre de 2024 · Cartografía Zona 777 de DTPM · Distancias en línea recta UTM 19S.</p>
+<script id="datos" type="application/json">__DATOS_PROYECTO__</script>
+<script>
+const datos = JSON.parse(document.getElementById('datos').textContent);
+const el = id => document.getElementById(id);
+const colores = {'Prioridad crítica':'#ba392d','Prioridad de accesibilidad':'#de9e3b',
+  'Alta demanda con recarga próxima':'#26737d','Menor prioridad':'#aebfc0','Sin datos comparables':'#e8ebea'};
+const fmt = (n, max=0) => n == null ? 'Sin dato' : n.toLocaleString('es-CL',{maximumFractionDigits:max});
+const medida = (n, unidad, dec=0) => n == null ? 'Sin dato' : `${fmt(n, dec)} ${unidad}`;
+const todosSitios = new Map(datos.sitios.map(f => [f.PARADA, f]));
+const canvas = el('mapa'), ctx = canvas.getContext('2d');
+let w, h, centroX, centroY, escala, base, seleccionado, sitios, arrastre, movido;
+const ext = [Infinity, Infinity, -Infinity, -Infinity];
+datos.zonas.forEach(z => {
+  z.forma = new Path2D();
+  for (const poligono of z.poligonos) for (const anillo of poligono) {
+    anillo.forEach(([x,y], i) => {
+      if (i === 0) z.forma.moveTo(x, -y); else z.forma.lineTo(x, -y);
+      ext[0] = Math.min(ext[0], x); ext[1] = Math.min(ext[1], y);
+      ext[2] = Math.max(ext[2], x); ext[3] = Math.max(ext[3], y);
+    });
+    z.forma.closePath();
+  }
+});
+el('cifra').textContent = `${datos.zonas.filter(z => z.cuadrante === 'Prioridad crítica').length} zonas de prioridad crítica`;
+for (const [nombre,color] of Object.entries({...colores,'Sitio para evaluar':'#132f33','Punto bip!':'#186fcd'})) {
+  const fila = document.createElement('div'), muestra = document.createElement('i');
+  muestra.className = 'swatch' + (['Sitio para evaluar','Punto bip!'].includes(nombre) ? ' dot' : '');
+  muestra.style.background = color; fila.append(muestra, nombre); el('leyenda').append(fila);
+}
+function encuadrar(){
+  centroX = (ext[0]+ext[2])/2; centroY = (ext[1]+ext[3])/2;
+  escala = base = Math.min((w-34)/(ext[2]-ext[0]),(h-70)/(ext[3]-ext[1]));
+  pintar();
+}
+function pantalla(x,y){return [w/2+(x-centroX)*escala,h/2-(y-centroY)*escala];}
+function mundo(x,y){return [centroX+(x-w/2)/escala,centroY-(y-h/2)/escala];}
+function punto(x,y,r,relleno,borde){
+  const [px,py] = pantalla(x,y); ctx.beginPath(); ctx.arc(px,py,r,0,Math.PI*2);
+  ctx.fillStyle=relleno; ctx.fill(); if(borde){ctx.strokeStyle=borde;ctx.lineWidth=1.5;ctx.stroke();}
+}
+function pintar(){
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h);
+  if (el('zonas').checked) {
+    ctx.save();ctx.translate(w/2-centroX*escala,h/2+centroY*escala);ctx.scale(escala,escala);
+    ctx.lineWidth=.55/escala;ctx.strokeStyle='#fff';
+    for(const z of datos.zonas){
+      ctx.globalAlpha = !el('filtro').value || z.cuadrante===el('filtro').value ? 1 : .23;
+      ctx.fillStyle=colores[z.cuadrante];ctx.fill(z.forma,'evenodd');ctx.stroke(z.forma);
+    }
+    ctx.globalAlpha=1;
+    if(seleccionado?.forma){ctx.strokeStyle='#142f35';ctx.lineWidth=2/escala;ctx.stroke(seleccionado.forma);}
+    ctx.restore();
+  }
+  if(el('bip').checked) for(const f of datos.bip) punto(f.ESTE,f.NORTE,Math.max(1.8,Math.min(3.4,110*escala)),'#186fcd');
+  if(el('sitios').checked) for(const f of sitios) punto(f.X_UTM,f.Y_UTM,5.3,'#132f33','#fff');
+  if(seleccionado?.X_UTM){
+    if(el('radio').checked) punto(seleccionado.X_UTM,seleccionado.Y_UTM,500*escala,'#e0403233','#a92c23');
+    punto(seleccionado.X_UTM,seleccionado.Y_UTM,7.5,'#a92c23','#fff');
+  }
+  const r = [10000,5000,2000,1000,500,250,100,50].find(m => m*escala <= 105) || 50;
+  el('escala').style.width = Math.max(24,r*escala)+'px'; el('escala').textContent = r>=1000 ? `${r/1000} km` : `${r} m`;
+}
+function detalle(titulo, estado, campos){
+  el('detalle-titulo').textContent=titulo;
+  const p=document.createElement('p');p.textContent=estado;
+  const dl=document.createElement('dl');
+  for(const [clave,valor] of campos){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=clave;dd.textContent=valor;dl.append(dt,dd);}
+  el('detalle').replaceChildren(p,dl);
+}
+function mostrarZona(z){
+  seleccionado=z;
+  detalle(`Zona ${z.zona_777} · ${z.comuna_cartografica}`,`${z.cuadrante}. ${z.perfil}.`,[
+    ['Viajes laborales / día',fmt(z.viajes_laborales_dia)],['Subidas bus / día',fmt(z.subidas_bus_dia)],['Puntos dentro de la zona',fmt(z.puntos_bip_internos)],
+    ['Subidas sin recarga a 300 m',medida(z.pct_subidas_sin_300m,'%',1)],['Subidas sin recarga a 500 m',medida(z.pct_subidas_sin_500m,'%',1)],
+    ['Distancia ponderada',medida(z.distancia_media_ponderada_m,'m')]]);
+  pintar();
+}
+function mostrarSitio(f, centrar=false){
+  seleccionado=f;
+  if(centrar){centroX=f.X_UTM;centroY=f.Y_UTM;escala=Math.max(escala,base*3.4);el('sitios').checked=true;}
+  detalle(`#${f.sitios} · ${f.CODIGO_PUBLICO || f.PARADA} · ${f.COMUNA}`,f.REFERENCIA || f.PARADA,[
+    ['Zona 777',fmt(f.zona_777)],['Subidas laborales / día',fmt(f.SUBIDAS_LABORAL)],['Bip! más cercano',medida(f.distancia_min_bip_m,'m')],
+    ['Subidas acumuladas al alcance',fmt(f.subidas_acumuladas_con_cobertura)]]);
+  for(const b of el('ranking').children)b.setAttribute('aria-current',b.dataset.parada===f.PARADA?'true':'false');
+  pintar();
+}
+function cambiarMetodo(){
+  sitios=datos.cobertura.filter(f=>f.metodo===el('metodo').value).map(f=>({...todosSitios.get(f.paradero),...f}));
+  el('ranking').replaceChildren();
+  for(const f of sitios){
+    const b=document.createElement('button'), rango=document.createElement('strong'), texto=document.createElement('span');
+    b.dataset.parada=f.PARADA;rango.textContent=`${f.sitios}.`;texto.textContent=`${f.CODIGO_PUBLICO || f.PARADA} · ${f.COMUNA}`;
+    b.append(rango,texto);b.addEventListener('click',()=>mostrarSitio(f,true));el('ranking').append(b);
+  }
+  el('cubiertas').textContent=fmt(sitios.at(-1)?.subidas_acumuladas_con_cobertura || 0);
+  if(seleccionado?.X_UTM){seleccionado=null;detalle('Detalle del mapa','Seleccione un sitio o una zona.',[]);}
+  if(w)pintar();
+}
+function zoom(factor, x=w/2, y=h/2){
+  const [cx,cy]=mundo(x,y);escala=Math.max(base*.7,Math.min(base*28,escala*factor));
+  centroX=cx-(x-w/2)/escala;centroY=cy+(y-h/2)/escala;pintar();
+}
+canvas.addEventListener('pointerdown',e=>{arrastre=[e.clientX,e.clientY];movido=false;canvas.setPointerCapture(e.pointerId);});
+canvas.addEventListener('pointermove',e=>{
+  if(!arrastre)return;
+  const dx=e.clientX-arrastre[0],dy=e.clientY-arrastre[1];
+  if(Math.abs(dx)+Math.abs(dy)>2)movido=true;
+  centroX-=dx/escala;centroY+=dy/escala;arrastre=[e.clientX,e.clientY];pintar();
+});
+canvas.addEventListener('pointercancel',()=>{arrastre=null;});
+canvas.addEventListener('pointerup',e=>{
+  if(!arrastre)return;arrastre=null;if(movido)return;
+  const box=canvas.getBoundingClientRect(),x=e.clientX-box.left,y=e.clientY-box.top;
+  const f=el('sitios').checked&&sitios.find(f=>{const [px,py]=pantalla(f.X_UTM,f.Y_UTM);return Math.hypot(x-px,y-py)<9;});
+  if(f){mostrarSitio(f);return;}
+  if(!el('zonas').checked)return;
+  const [ux,uy]=mundo(x,y);ctx.save();ctx.resetTransform();
+  const zona=datos.zonas.find(z=>ctx.isPointInPath(z.forma,ux,-uy,'evenodd'));ctx.restore();
+  if(zona)mostrarZona(zona);
+});
+canvas.addEventListener('wheel',e=>{e.preventDefault();zoom(e.deltaY<0?1.25:.8,e.offsetX,e.offsetY);},{passive:false});
+canvas.addEventListener('keydown',e=>{
+  const dir={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,1],ArrowDown:[0,-1]}[e.key];
+  if(dir){e.preventDefault();centroX+=dir[0]*50/escala;centroY+=dir[1]*50/escala;pintar();}
+  if(e.key==='+'||e.key==='=')zoom(1.4);if(e.key==='-')zoom(1/1.4);
+});
+for(const id of ['zonas','bip','sitios','radio','filtro'])el(id).addEventListener('change',pintar);
+el('metodo').addEventListener('change',cambiarMetodo);el('menos').addEventListener('click',()=>zoom(1/1.4));
+el('mas').addEventListener('click',()=>zoom(1.4));el('inicio').addEventListener('click',encuadrar);
+cambiarMetodo();
+new ResizeObserver(()=>{w=canvas.clientWidth;h=canvas.clientHeight;const dpr=Math.min(devicePixelRatio||1,2);canvas.width=w*dpr;canvas.height=h*dpr;encuadrar();}).observe(canvas);
+</script>
+</body>
+</html>

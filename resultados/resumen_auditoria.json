@@ -1,0 +1,106 @@
+{
+  "viajes_validos_semana": 15191070,
+  "viajes_sin_poligono": 34553,
+  "zonas_en_cartografia": 803,
+  "zonas_comparables": 793,
+  "zonas_criticas": 27,
+  "zonas_criticas_sin_puntos_internos": 6,
+  "p75_viajes_zona": 2406.0,
+  "p75_pct_brecha_zona": 13.746630727762803,
+  "puntos_bip": 1905,
+  "puntos_sin_poligono": 29,
+  "asignaciones_bip_con_solape": 0,
+  "asignaciones_paradas_con_solape": 0,
+  "asignaciones_gtfs_con_solape": 0,
+  "paraderos_gtfs_sin_poligono": 176,
+  "concordancia_zona_diccionario_cartografia": 0.9875720461095101,
+  "paraderos_bus_enlazados": 11929,
+  "paraderos_bus_dtpm": 11932,
+  "pct_subidas_dtpm_con_ubicacion": 99.94018717838567,
+  "pct_subidas_por_codigo_interno_diccionario": 58.03159690122932,
+  "paraderos_criticos": 426,
+  "paraderos_aislados_500m": 2108,
+  "k": 2,
+  "silueta": 0.46877949132753627,
+  "pca_varianza_2d": 0.7473936815927269,
+  "perfil_mayor_brecha": 1,
+  "perfiles_alta_demanda_y_brecha": [],
+  "n_candidatos": 20,
+  "n_elegibles": 274,
+  "cobertura_500m_final": {
+    "Índice del avance": 35876.799999999996,
+    "Cobertura marginal": 54091.0
+  },
+  "metricas_espaciales": [
+    {
+      "Modelo": "Ridge con recarga",
+      "MAE": 175.64098441366374,
+      "RMSE": 408.21064477127254,
+      "R2": 0.16075305604333057,
+      "n_train": 9197,
+      "n_test": 2732
+    },
+    {
+      "Modelo": "Ridge sin recarga",
+      "MAE": 179.75866821716963,
+      "RMSE": 422.91402199973,
+      "R2": 0.09920641032330046,
+      "n_train": 9197,
+      "n_test": 2732
+    },
+    {
+      "Modelo": "Random Forest",
+      "MAE": 189.17060479312565,
+      "RMSE": 470.43110969985753,
+      "R2": -0.11458497806915746,
+      "n_train": 9197,
+      "n_test": 2732
+    },
+    {
+      "Modelo": "Dummy (media)",
+      "MAE": 222.7165465981252,
+      "RMSE": 446.52902921956274,
+      "R2": -0.004200685470378884,
+      "n_train": 9197,
+      "n_test": 2732
+    }
+  ],
+  "metricas_temporales": [
+    {
+      "Modelo": "Ingenuo estacional (24 h)",
+      "MAE": 5847.069444444445,
+      "RMSE": 9419.833560411333,
+      "ventanas": 3,
+      "convergencias": 3
+    },
+    {
+      "Modelo": "SARIMA(1,0,0)(1,0,0,24)",
+      "MAE": 7127.207788759758,
+      "RMSE": 11571.190869363876,
+      "ventanas": 3,
+      "convergencias": 3
+    },
+    {
+      "Modelo": "ARIMA(1,1,1)",
+      "MAE": 109688.11111111111,
+      "RMSE": 139899.76633557832,
+      "ventanas": 3,
+      "convergencias": 3
+    }
+  ],
+  "psm_descriptivo": {
+    "n_tratados_soporte": 6948,
+    "n_controles_soporte": 4917,
+    "controles_distintos_emparejados": 2950,
+    "diferencia_media_ajustada_descriptiva": 161.51951640759933,
+    "max_smd_post": 0.03892154538086665
+  },
+  "fuentes": [
+    "datos_originales/Lugares de carga",
+    "datos_originales/Zona777_ADATRAP/DIC_777.xlsx",
+    "datos_originales/Subidas_Paradero_Estacion_2026.04_v3.xlsx",
+    "datos_originales/Zona777_ADATRAP/Zonas777-04-04-2014/Shape/Zonas777_V07_04_2014.shp",
+    "datos_originales/GTFS_20260418.zip"
+  ],
+  "mapa": "Live_Demo_BIP.html"
+}

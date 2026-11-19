@@ -1,0 +1,222 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[spanish,es-nodecimaldot]{babel}
+\usepackage[a4paper,margin=23mm,headheight=15pt,footskip=15mm]{geometry}
+\usepackage{amsmath,booktabs,graphicx,xcolor,tabularx,fancyhdr}
+\usepackage[unicode,colorlinks=true,linkcolor=teal!60!black,urlcolor=teal!60!black,citecolor=teal!60!black]{hyperref}
+
+\definecolor{tinta}{HTML}{173639}
+\definecolor{acento}{HTML}{26737D}
+\definecolor{pizarra}{HTML}{4C6261}
+\definecolor{fondo}{HTML}{EEF4F0}
+\hypersetup{
+  pdftitle={Desiertos de recarga bip! en Santiago},
+  pdfsubject={Informe final de Minería de Datos, IIC2433},
+  pdflang={es-CL}
+}
+\graphicspath{{resultados/}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt plus 1pt}
+\setlength{\emergencystretch}{2em}
+\renewcommand{\arraystretch}{1.16}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{pizarra}IIC2433 \textperiodcentered\ Minería de Datos}
+\fancyhead[R]{\small\color{pizarra}Entrega final 2026-2}
+\fancyfoot[L]{\small\color{pizarra}Desiertos de recarga bip! en Santiago}
+\fancyfoot[R]{\small\color{pizarra}\thepage}
+\renewcommand{\headrulewidth}{0.35pt}
+
+\newcommand{\figura}[4]{%
+  \par\medskip
+  \begin{minipage}{\linewidth}
+    \centering
+    \includegraphics[width=\linewidth,height=#2,keepaspectratio]{#1}\par\smallskip
+    \refstepcounter{figure}\label{#3}%
+    {\small\textbf{Figura \thefigure.} #4\par}
+  \end{minipage}\par\medskip
+}
+
+\begin{document}
+
+{\sffamily\bfseries\color{acento} INFORME FINAL DEL PROYECTO}\par\medskip
+{\sffamily\bfseries\color{tinta}\fontsize{32}{37}\selectfont
+Desiertos de recarga bip!\par en Santiago\par}
+\medskip
+{\large\color{pizarra} Diagnóstico por Zona 777 y priorización de paraderos}\par
+{\small Pontificia Universidad Católica de Chile \textperiodcentered\ IIC2433 \textperiodcentered\ Noviembre de 2026}\par
+\vspace{5pt}
+
+\begingroup
+\setlength{\fboxsep}{10pt}
+\colorbox{fondo}{\begin{minipage}{\dimexpr\linewidth-2\fboxsep\relax}
+\textbf{Resumen.} Procesamos 15.191.070 inicios de viaje y ubicamos 11.929 paraderos de bus para medir el acceso a la red de recarga. Entre 793 zonas comparables, 27 presentan alta demanda y alta brecha. Con una dotación simulada de 20 sitios, elegir cada ubicación por cobertura marginal deja 54.091 subidas laborales diarias al alcance de recarga, frente a 35.877 con el ranking del avance. Las cifras representan demanda existente bajo un escenario de distancia en línea recta.
+\end{minipage}}\par
+\endgroup
+
+\section{Pregunta y alcance}
+
+¿En qué sectores de Santiago coinciden una alta demanda de transporte y un acceso limitado a recarga bip!, y qué paraderos conviene evaluar para ampliar la cobertura? La comuna puede ocultar desigualdades entre barrios. Usamos Zona 777 para el diagnóstico y conservamos el paradero de bus como escala para proponer ubicaciones. Los inicios de viaje distinguen demanda de origen. Las subidas de bus incluyen etapas y transbordos y dan peso a la accesibilidad de cada paradero.
+
+\section{Datos y control de calidad}
+
+\begin{tabularx}{\linewidth}{@{}p{32mm}X@{}}
+\toprule
+\textbf{Fuente} & \textbf{Uso en el proyecto} \\
+\midrule
+ADATRAP \cite{dtpm} & Siete archivos diarios del 11 al 17 de abril de 2026. Cada fila válida aporta un inicio de viaje sin factor de expansión. \\
+Subidas DTPM \cite{dtpm} & Promedio del 13 al 17 de abril, por paradero y media hora. Se filtra el modo bus. \\
+GTFS DTPM \cite{gtfs} & Coordenadas y oferta programada por código público. Entra en vigencia el 18 de abril, un día después de la ventana de demanda. \\
+Catastro bip! \cite{bip} & Cinco libros locales de septiembre de 2024. Tras deduplicar coordenadas exactas se conservan 1.905 emplazamientos. \\
+Zona 777 \cite{dtpm} & Cartografía de 2014 y diccionario histórico de paradas. Se conservan 803 códigos en el mapa. \\
+\bottomrule
+\end{tabularx}
+
+\clearpage
+\section{Integración y método}
+
+\subsection{Ubicación y agregación}
+
+El cruce por código interno con el diccionario histórico ubicaba el 58,03\,\% de las subidas laborales DTPM. El enlace entre el código público y \texttt{stop\_id} del GTFS recuperó 11.929 de 11.932 registros agrupados, equivalentes al 99,94\,\% de esas subidas. El diccionario histórico se usa para auditar la proyección cartográfica. La asignación geográfica y el código de diccionario coinciden en el 98,76\,\% de los 11.104 pares comparables.
+
+Los viajes se leen por bloques de 300.000 filas. Se agregan la hora y \texttt{zona\_inicio\_viaje}, con punta de 07:00 a 09:00 y de 17:00 a 20:00, excluido el extremo final. Los 34.553 viajes sin código cartográfico quedan en la serie temporal y se excluyen del diagnóstico zonal. El diagnóstico territorial usa lunes a viernes. La serie temporal usa los siete días.
+
+Los polígonos carecen de archivo de proyección. Sus coordenadas son compatibles con latitud y longitud de Santiago. Se supone WGS84 para proyectarlas a UTM 19S y se contrasta la asignación con el diccionario. La asignación punto-polígono ubica 1.876 puntos bip! en zonas y deja 29 fuera. Hay 176 paraderos enlazados fuera de los polígonos. Se incluyen en el diagnóstico por paradero y se excluyen de los indicadores por zona.
+
+\subsection{Accesibilidad y regla de prioridad}
+
+Para el paradero $i$, $d_i$ es la distancia euclidiana mínima a un punto del catastro. \texttt{cKDTree} obtiene $d_i$ y cuenta los puntos dentro de $r\in\{300,500\}$ metros. La búsqueda incluye toda la red, también los puntos en polígonos vecinos \cite{kdtree}.
+
+Si $b_i$ son las subidas laborales diarias de bus en el paradero $i$, y $I_z$ es el conjunto de paraderos con datos asignados a la zona $z$, la brecha $B_z(r)$ y la distancia media ponderada $\bar d_z$ son
+\begin{equation*}
+ B_z(r)=100\,\frac{\sum_{i\in I_z} b_i\,\mathbf{1}\{d_i>r\}}{\sum_{i\in I_z} b_i},
+ \qquad
+ \bar d_z=\frac{\sum_{i\in I_z} b_i\,d_i}{\sum_{i\in I_z} b_i}.
+\end{equation*}
+
+El corte zonal de demanda alta es el percentil 75 de inicios de viaje por día laboral. El corte de brecha alta es el percentil 75 de $B_z(500)$. Se calculan en zonas con viajes y subidas de bus observadas. En paraderos, los mismos percentiles se aplican a subidas/día y distancia mínima. Un valor igual al umbral entra en la categoría alta.
+
+\begin{tabularx}{\linewidth}{@{}l l X@{}}
+\toprule
+\textbf{Demanda} & \textbf{Brecha o distancia} & \textbf{Cuadrante} \\
+\midrule
+Alta & Alta & Prioridad crítica \\
+Baja & Alta & Prioridad de accesibilidad \\
+Alta & Baja & Alta demanda con recarga próxima \\
+Baja & Baja & Menor prioridad \\
+\bottomrule
+\end{tabularx}
+
+\clearpage
+\section{Resultados territoriales}
+
+Para las 793 zonas con demanda y acceso comparables, los cortes son 2.406 inicios de viaje laborales diarios y 13,75\,\% de subidas de bus sin recarga a 500 m. Se obtienen 27 zonas críticas, 172 de prioridad de accesibilidad, 172 de alta demanda con recarga próxima y 422 de menor prioridad. Otras diez zonas quedan sin datos comparables. Seis zonas críticas carecen de puntos dentro del polígono. La distancia a un punto vecino puede reducir la brecha de una zona con inventario interno igual a cero.
+
+\begin{tabularx}{\linewidth}{@{}X r r r@{}}
+\toprule
+\textbf{Radio} & \textbf{Paraderos sin recarga} & \textbf{Subidas/día fuera} & \textbf{Parte del total} \\
+\midrule
+300 m & 4.926 & 539.812 & 21,50\,\% \\
+500 m & 2.108 & 194.064 & 7,73\,\% \\
+\bottomrule
+\end{tabularx}
+
+\figura{03_matriz_prioridad.png}{62mm}{fig:matriz}{Cuadrantes por paradero y Zona 777. Las líneas discontinuas marcan los percentiles 75 y los puntos rojos indican prioridad crítica.}
+
+\figura{09_mapa_zona777.png}{91mm}{fig:mapa}{Distribución de cuadrantes en Santiago. Los puntos oscuros muestran los 20 candidatos por índice del avance.}
+
+\clearpage
+\section{Perfiles y estimación por paradero}
+
+\subsection{PCA y K-Means}
+
+Se estandarizan cinco atributos zonales. El volumen de viajes y la cantidad de puntos internos reciben primero la transformación $\log(1+x)$. Los otros atributos son la proporción de viajes en punta, la distancia ponderada y $B_z(500)$. El registro de espera se omite porque su correspondencia con el diccionario disponible es incierta. K-Means se ajusta sobre los cinco atributos y el PCA se emplea para visualizar el resultado en dos dimensiones.
+
+Se prueban valores de $k$ entre 2 y 8. La mayor silueta es 0,469 para $k=2$. El codo de la curva de inercia sirve de diagnóstico adicional. Los dos componentes explican el 74,7\,\% de la variación. En el primero predominan la distancia ponderada y $B_z(500)$. En el segundo, la proporción de viajes en punta.
+
+\figura{05_pca_clustering.png}{60mm}{fig:pca}{Curva del codo, silueta y proyección de los perfiles zonales.}
+
+El perfil de mayor brecha tiene 113 zonas y una mediana del 71,5\,\% de subidas fuera de 500 m. Su mediana de demanda es de 444 viajes/día frente a 1.365 en el otro perfil. Ningún clúster cruza ambos cortes críticos en sus medianas. Los cuadrantes identifican 5 zonas críticas en el perfil de mayor brecha y 22 en el otro perfil.
+
+\subsection{Regresión transversal}
+
+Ridge y Random Forest estiman \textbf{subidas laborales diarias por paradero}. Usan ubicación, número de rutas programadas, densidad de paraderos y variables de recarga. La media de entrenamiento es la referencia. La partición por comuna deja 9.197 paraderos para entrenamiento y 2.732 para prueba. Se evalúa Ridge también sin variables de recarga en la misma partición.
+
+\begin{tabularx}{\linewidth}{@{}X r r r@{}}
+\toprule
+\textbf{Modelo} & \textbf{MAE} & \textbf{RMSE} & \textbf{$R^2$} \\
+\midrule
+Ridge con recarga & 175,64 & 408,21 & 0,161 \\
+Ridge sin recarga & 179,76 & 422,91 & 0,099 \\
+Random Forest & 189,17 & 470,43 & $-0,115$ \\
+Media de entrenamiento & 222,72 & 446,53 & $-0,004$ \\
+\bottomrule
+\end{tabularx}
+
+Ridge con recarga obtiene el menor MAE en esta partición. La diferencia respecto de Ridge sin recarga es de 4,12 subidas/día. La matriz y el ranking usan demanda observada. El error de regresión cuantifica la capacidad de estimar demanda y no el efecto de instalar un punto.
+
+\clearpage
+\section{Pronóstico, asociación y cobertura}
+
+\subsection{Pronóstico agregado por hora}
+
+Se entrenan modelos con todos los datos previos a cada fecha de prueba, del 15 al 17 de abril. Cada evaluación pronostica las 24 horas siguientes. La referencia copia los viajes de la misma hora del día anterior. Se compara con ARIMA$(1,1,1)$ y SARIMA$(1,0,0)(1,0,0)_{24}$ \cite{sarima}. Los errores son promedios de tres ventanas, en viajes/hora.
+
+\begin{tabularx}{\linewidth}{@{}X r r@{}}
+\toprule
+\textbf{Modelo} & \textbf{MAE} & \textbf{RMSE} \\
+\midrule
+Misma hora del día anterior & 5.847 & 9.420 \\
+SARIMA diario & 7.127 & 11.571 \\
+ARIMA sin estacionalidad & 109.688 & 139.900 \\
+\bottomrule
+\end{tabularx}
+
+El baseline estacional logra los menores errores en las tres fechas de prueba. La serie agregada sirve para estudiar horarios del sistema. Las métricas de regresión y pronóstico corresponden a variables, unidades y particiones distintas.
+
+\subsection{Asociación observacional}
+
+Se estima un puntaje de propensión de contar con recarga a 300 m, a partir de las coordenadas UTM y la distancia al centro. Se empareja en soporte común, 1:1 y con reemplazo \cite{rosenbaum}. Se analizan 6.948 paraderos expuestos y se usan 2.950 comparadores distintos. El mayor desequilibrio absoluto estandarizado pasa de 0,423 a 0,039. La diferencia ajustada es de 161,52 subidas/día. El balance cubre tres covariables geográficas. Variables como actividad comercial, conectividad y frecuencia pueden seguir confundiendo la asociación.
+
+\subsection{Candidatos y evaluación de escenarios}
+
+Los cortes por paradero son 191,8 subidas/día y 416,6 m. Hay 426 paraderos críticos y, entre ellos, 274 quedan sin recarga a 500 m. El índice del avance ordena esos candidatos por $b_i d_i/1000$, el producto de subidas diarias por distancia en kilómetros, con al menos 200 m de separación entre sitios. El primer paradero del ranking es \textbf{PI1788, Intermodal Del Sol, Maipú}, con 8.021 subidas/día y 778 m hasta el bip! más cercano en el catastro.
+
+El escenario alternativo elige en cada iteración el candidato que da acceso a más subidas desatendidas, entre los sitios que todavía cumplen la separación. Se mantiene el mismo conjunto elegible y la misma dotación de sitios. Cada paradero con demanda preexistente se cuenta una sola vez aunque se superpongan radios de distintos emplazamientos.
+
+\begin{tabularx}{\linewidth}{@{}X r r r@{}}
+\toprule
+\textbf{Estrategia} & \textbf{5 sitios} & \textbf{10 sitios} & \textbf{20 sitios} \\
+\midrule
+Índice del avance & 18.557 & 26.069 & 35.877 \\
+Cobertura marginal & 22.690 & 34.739 & 54.091 \\
+\bottomrule
+\end{tabularx}
+
+\smallskip
+{\small Valores redondeados de subidas laborales por día al alcance de los sitios simulados.}
+
+\clearpage
+\section{Discusión y conclusión}
+
+\figura{08_ranking_candidatos.png}{74mm}{fig:cobertura}{Cobertura acumulada a 500 m según estrategia. Se contabilizan subidas observadas que quedarían al alcance de al menos un sitio nuevo.}
+
+Con 20 sitios, la cobertura marginal gana 18.214 subidas/día respecto del índice del avance, cerca de un 51\,\% más sobre esa referencia. Alcanza 235 paraderos antes desatendidos frente a 97 con el índice. El resultado respalda evaluar la cobertura de los paraderos vecinos al asignar una dotación fija de nuevos puntos.
+
+La cartografía y el catastro pertenecen a años distintos de la demanda. La vigencia de cada punto y sus horarios requieren verificación. Los radios no incluyen barreras, trazado de calles ni accesos peatonales. La demanda describe una semana de abril y puede cambiar según el período. El diagnóstico tampoco observa recargas efectivas ni pagos alternativos. Para una decisión de instalación se requiere verificar recorridos a pie, locales y factibilidad operativa.
+
+\subsection*{Reproducción y demostración}
+
+El notebook ejecutado genera la matriz de prioridad, las métricas, el detalle de sitios y el mapa autónomo. Para reproducirlo se necesitan las dependencias de \path{requirements.txt}, las fuentes originales y el GTFS fechado. El mapa \path{Live_Demo_BIP.html} permite abrir cada zona y comparar estrategias sin conexión.
+
+\begin{thebibliography}{9}
+\small
+\setlength{\itemsep}{2pt}
+\bibitem{dtpm} Directorio de Transporte Público Metropolitano. \emph{Matrices de viaje, subidas por paradero y cartografía Zona 777}. \href{https://www.dtpm.cl/index.php/documentos/matrices-de-viaje}{Portal DTPM}.
+\bibitem{gtfs} Directorio de Transporte Público Metropolitano. \emph{GTFS estático del 18 de abril de 2026, versión V162}. \href{https://www.dtpm.cl/descargas/gtfs/GTFS_20260418.zip}{Archivo oficial}.
+\bibitem{bip} Subsecretaría de Transportes. \emph{Lugares de carga de tarjeta bip!} \href{https://datos.gob.cl/es/group/transporte}{Portal de Datos Abiertos de Chile}.
+\bibitem{kdtree} SciPy. \emph{Documentación de \texttt{scipy.spatial.cKDTree}}. \href{https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.cKDTree.html}{Manual de referencia}.
+\bibitem{sarima} Statsmodels. \emph{Análisis de series temporales por métodos de espacio de estados}. \href{https://www.statsmodels.org/stable/statespace.html}{Documentación técnica}.
+\bibitem{rosenbaum} Rosenbaum, P. R. y Rubin, D. B. (1983). The central role of the propensity score in observational studies for causal effects. \emph{Biometrika}, 70(1), 41--55. \href{https://doi.org/10.1093/biomet/70.1.41}{DOI}.
+\end{thebibliography}
+
+\end{document}

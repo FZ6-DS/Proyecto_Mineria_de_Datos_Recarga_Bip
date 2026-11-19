@@ -1,0 +1,13 @@
+/.venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+/datos_originales/
+/fuentes_complementarias/
+/Codigos pasados, errores y base/
+/Proyecto DM 2026-2.pdf
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
